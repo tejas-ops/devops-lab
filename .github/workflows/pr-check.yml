@@ -1,0 +1,50 @@
+name: PR Check — Lint & Test
+
+# Triggers: runs on every pull request targeting main
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+
+  # -------------------------------------------------------
+  # JOB: Lint Python code style
+  # -------------------------------------------------------
+  lint:
+    name: Lint (flake8)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install flake8
+        run: pip install flake8
+
+      - name: Run flake8
+        run: flake8 app/ --max-line-length=100 --exclude=__pycache__
+
+  # -------------------------------------------------------
+  # JOB: Run tests on the PR branch
+  # -------------------------------------------------------
+  test:
+    name: Run Pytest
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r app/requirements.txt
+
+      - name: Run tests
+        run: |
+          cd app
+          pytest tests/ -v --tb=short

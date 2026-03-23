@@ -1,0 +1,23 @@
+# values.prod.yaml — production overrides
+# Usage: helm upgrade --install devops-lab ./helm/devops-lab -f helm/devops-lab/values.prod.yaml
+
+image:
+  repository: YOUR_DOCKERHUB_USERNAME/devops-lab
+  tag: latest
+  pullPolicy: Always
+
+replicaCount: 3
+
+config:
+  environment: production
+
+ingress:
+  host: devops-lab.yourdomain.com
+
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "200m"
+  limits:
+    memory: "256Mi"
+    cpu: "500m"

@@ -1,0 +1,74 @@
+name: CD — Deploy to Kubernetes
+
+# Triggers: only runs after the CI workflow completes successfully on main
+on:
+  workflow_run:
+    workflows: ["CI — Test, Build, Push"]
+    types: [completed]
+    branches: [main]
+
+env:
+  IMAGE_NAME: devops-lab
+
+jobs:
+
+  # -------------------------------------------------------
+  # JOB: Deploy to Kubernetes
+  # -------------------------------------------------------
+  deploy:
+    name: Deploy to K8s
+    runs-on: ubuntu-latest
+
+    # Only deploy if CI passed (not if it failed)
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Get the same short SHA that CI used to tag the image
+      - name: Set image tag
+        id: tag
+        run: echo "IMAGE_TAG=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      # ---- For AKS (Azure Kubernetes Service) ----
+      # Uncomment this block when you set up Phase 5 (Terraform + AKS)
+      #
+      # - name: Azure Login
+      #   uses: azure/login@v2
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
+      #
+      # - name: Get AKS kubeconfig
+      #   run: |
+      #     az aks get-credentials \
+      #       --resource-group devops-lab-rg \
+      #       --name devops-lab-aks \
+      #       --overwrite-existing
+
+      # ---- For local/self-hosted K8s ----
+      # Uses a kubeconfig stored as a GitHub secret
+      - name: Set up kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      # Update the Kubernetes deployment to use the new image
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/devops-lab \
+            devops-lab=${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.IMAGE_TAG }} \
+            --namespace=devops-lab
+
+      # Wait until the rollout finishes — fails the pipeline if pods crash
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/devops-lab \
+            --namespace=devops-lab \
+            --timeout=120s
+
+      # Print pod status after deploy
+      - name: Show pod status
+        run: |
+          kubectl get pods --namespace=devops-lab

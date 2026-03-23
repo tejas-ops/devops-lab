@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: devops-lab-ingress
+  namespace: devops-lab
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: devops-lab.local               # add this to /etc/hosts for local testing
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: devops-lab-service
+                port:
+                  number: 80

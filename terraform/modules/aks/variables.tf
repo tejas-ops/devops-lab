@@ -1,0 +1,31 @@
+variable "cluster_name" {
+  type = string
+}
+
+variable "location" {
+  type = string
+}
+
+variable "resource_group_name" {
+  type = string
+}
+
+variable "node_count" {
+  type    = number
+  default = 2
+}
+
+variable "node_vm_size" {
+  type    = string
+  default = "Standard_B2s"
+}
+
+variable "acr_id" {
+  description = "Resource ID of the ACR — used to grant AKS pull access"
+  type        = string
+}
+
+variable "environment" {
+  type    = string
+  default = "dev"
+}

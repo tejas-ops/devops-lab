@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 15s          # scrape every target every 15 seconds
+  evaluation_interval: 15s      # evaluate alerting rules every 15 seconds
+
+scrape_configs:
+
+  # Prometheus scrapes itself — useful for monitoring the monitoring system
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Scrape the Flask app's /metrics endpoint
+  - job_name: devops-lab-app
+    static_configs:
+      - targets: ["app:5000"]   # "app" matches the service name in docker-compose
+    metrics_path: /metrics

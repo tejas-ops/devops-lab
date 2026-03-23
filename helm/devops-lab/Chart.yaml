@@ -1,0 +1,6 @@
+apiVersion: v2
+name: devops-lab
+description: A Helm chart for the DevOps Lab Flask application
+type: application
+version: 0.1.0          # chart version — bump this when you change the chart
+appVersion: "1.0.0"     # app version — matches APP_VERSION in your Flask app

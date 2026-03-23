@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-lab-service
+  namespace: devops-lab
+  labels:
+    app: devops-lab
+spec:
+  # ClusterIP = internal only (default)
+  # Use NodePort for local testing without an ingress controller
+  # Use LoadBalancer when running in AKS (Phase 5)
+  type: ClusterIP
+
+  selector:
+    app: devops-lab                        # routes traffic to pods with this label
+
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80                             # port the Service listens on
+      targetPort: 5000                     # port the container listens on

@@ -1,0 +1,51 @@
+# values.yaml — default values for the chart
+# Override these per environment using:
+#   helm install ... -f values.prod.yaml
+#   helm install ... --set image.tag=abc1234
+
+# --- Image ---
+image:
+  repository: devops-lab
+  tag: latest
+  pullPolicy: IfNotPresent          # use IfNotPresent for kind, Always for real registries
+
+# --- Replicas ---
+replicaCount: 2
+
+# --- App config (goes into ConfigMap) ---
+config:
+  environment: production
+  appVersion: "1.0.0"
+  port: "5000"
+
+# --- Service ---
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 5000
+
+# --- Ingress ---
+ingress:
+  enabled: true
+  className: nginx
+  host: devops-lab.local
+
+# --- Resources ---
+resources:
+  requests:
+    memory: "64Mi"
+    cpu: "100m"
+  limits:
+    memory: "128Mi"
+    cpu: "250m"
+
+# --- Health probes ---
+probes:
+  liveness:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 15
+  readiness:
+    path: /health
+    initialDelaySeconds: 5
+    periodSeconds: 10

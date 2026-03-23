@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "devops-lab.fullname" . }}-config
+  namespace: devops-lab
+  labels:
+    {{- include "devops-lab.labels" . | nindent 4 }}
+data:
+  ENVIRONMENT: {{ .Values.config.environment | quote }}
+  APP_VERSION: {{ .Values.config.appVersion | quote }}
+  PORT: {{ .Values.config.port | quote }}

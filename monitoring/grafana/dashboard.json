@@ -1,0 +1,57 @@
+{
+  "title": "DevOps Lab — App Dashboard",
+  "uid": "devops-lab-dashboard",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Total Requests",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(app_request_count_total)",
+          "legendFormat": "Total Requests"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Requests Per Endpoint",
+      "type": "bargauge",
+      "gridPos": { "x": 6, "y": 0, "w": 10, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum by (endpoint) (app_request_count_total)",
+          "legendFormat": "{{ endpoint }}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Request Rate (req/sec)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(app_request_count_total[1m])",
+          "legendFormat": "{{ endpoint }}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Average Request Latency (ms)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(app_request_latency_seconds_sum[1m]) / rate(app_request_latency_seconds_count[1m]) * 1000",
+          "legendFormat": "{{ endpoint }}"
+        }
+      ]
+    }
+  ]
+}

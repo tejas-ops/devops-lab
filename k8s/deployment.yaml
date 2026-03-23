@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-lab
+  namespace: devops-lab
+  labels:
+    app: devops-lab
+spec:
+  replicas: 2                              # run 2 pods for high availability
+
+  selector:
+    matchLabels:
+      app: devops-lab                      # must match template labels below
+
+  # Rolling update: bring up new pods before killing old ones → zero downtime
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1                          # allow 1 extra pod during update
+      maxUnavailable: 0                    # never kill a pod before new one is ready
+
+  template:
+    metadata:
+      labels:
+        app: devops-lab
+
+    spec:
+      serviceAccountName: devops-lab-sa
+      containers:
+        - name: devops-lab
+          # In CI/CD (Phase 2), this image tag gets replaced by the git SHA
+          # e.g.  YOUR_DOCKERHUB_USERNAME/devops-lab:abc1234
+          image: devops-lab:latest
+          imagePullPolicy: IfNotPresent    # use local image if available (needed for kind)
+
+          ports:
+            - containerPort: 5000
+
+          # Load non-sensitive config from ConfigMap
+          envFrom:
+            - configMapRef:
+                name: devops-lab-config
+
+          # Load sensitive values from Secret individually
+          env:
+            - name: APP_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: devops-lab-secret
+                  key: APP_SECRET_KEY
+
+          # Liveness probe: restart the pod if /health stops responding
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10        # wait 10s before first check
+            periodSeconds: 15
+
+          # Readiness probe: only send traffic once the pod is healthy
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+
+          # Resource limits: prevent one pod from starving others
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"                  # 100 millicores = 0.1 CPU
+            limits:
+              memory: "128Mi"
+              cpu: "250m"
